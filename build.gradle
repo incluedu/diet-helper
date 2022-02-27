@@ -1,0 +1,11 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id "com.github.node-gradle.node" version "3.1.1"
+    id 'java'
+    id "org.jetbrains.kotlin.kapt" version"$kotlinVersion" apply(false)
+}
+
+group 'net.lustenauer.dh'
+description 'DIET-HELPER'
+version '0.0.1-SNAPSHOT'
+

@@ -1,0 +1,21 @@
+plugins{
+    id "org.jetbrains.kotlin.kapt"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'kotlin'
+
+dependencies {
+    implementation 'io.swagger.core.v3:swagger-annotations:2.1.11'
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+
+//    implementation project(':dh-kapt-annotations')
+}
+
+//idea {
+//    module {
+//        sourceDirs += file('src/main/kotlin')
+//    }
+//}
+

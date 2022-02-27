@@ -1,0 +1,77 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+  id "org.openapi.generator" version "5.1.1"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'kotlin'
+apply plugin: 'com.github.node-gradle.node'
+
+task buildAngularApp(type: NpxTask) {
+  dependsOn npmInstall
+  command = 'ng'
+  args = ['build']
+  inputs.files('package.json', 'package-lock.json', 'angular.json', 'tsconfig.json', 'tsconfig.app.json')
+  inputs.dir('src')
+  inputs.dir(fileTree("node_modules").exclude(".cache"))
+  outputs.dir("${project.projectDir}/build/webapp")
+}
+
+task genApi(type: NpxTask) {
+  command = 'openapi-generator-cli generate -g typescript-angular -i ../dh-server/build/openapi.json -o ./build/openapi'
+  args = []
+  inputs.dir(fileTree("node_modules").exclude(".cache"))
+}
+
+task generateTypescriptAngular(type: GenerateTask) {
+  generatorName = "typescript-angular"
+  inputSpec = "$rootDir/dh-server/build/openapi.json"
+  outputDir = "$rootDir/dh-ui/src/app/modules/generated"
+}
+
+task markGeneratedSoruceAsSoruce(type: Task) {
+  println "Mark generatedSource as source"
+  sourceSets.main.java.srcDir new File(projectDir, '/src/app/modules/generated')
+  idea {
+    module {
+      // Marks the already(!) added srcDir as "generated"
+      generatedSourceDirs += file("$projectDir/src/app/modules/generated")
+    }
+  }
+}
+
+
+task generateAll(type: Task) {
+  println "Generate everything ...."
+  dependsOn npmInstall, ':dh-server:generateOpenApiDocs', ':dh-server:deleteOpenapiJson', generateTypescriptAngular, markGeneratedSoruceAsSoruce
+}
+
+task printSourceSetInformation() {
+
+  doLast {
+    sourceSets.each { srcSet ->
+      println "[" + srcSet.name + "]"
+      print "-->Source directories: " + srcSet.allJava.srcDirs + "\n"
+      print "-->Output directories: " + srcSet.output.classesDirs.files + "\n"
+      print "-->Compile classpath:\n"
+      srcSet.compileClasspath.files.each {
+        print "  " + it.path + "\n"
+      }
+      println ""
+    }
+  }
+}
+
+
+sourceSets {
+  java {
+    main {
+      resources {
+        // This makes the processResources task automatically depend on the buildAngularApp one
+        srcDir(buildAngularApp)
+      }
+    }
+  }
+}

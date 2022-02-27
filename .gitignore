@@ -1,0 +1,7 @@
+# Project exclude paths
+/.gradle/
+/build/
+/dh-api/build/
+/dh-server/build/
+# Project exclude paths
+/dh-ui/build/

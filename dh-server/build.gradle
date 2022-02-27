@@ -1,0 +1,70 @@
+plugins {
+    id "org.jetbrains.kotlin.plugin.spring" version "1.5.31"
+    id "org.jetbrains.kotlin.kapt"
+    id "org.springframework.boot" version "$springBootVersion"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+    id "com.github.johnrengelman.processes" version "0.5.0"
+    id "org.springdoc.openapi-gradle-plugin" version "1.3.3"
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: "kotlin-kapt"
+
+tasks.withType(Jar) { it.duplicatesStrategy = DuplicatesStrategy.WARN }
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.31'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.5.31'
+    implementation 'org.springdoc:springdoc-openapi-core:1.1.49'
+    implementation 'io.github.microutils:kotlin-logging-jvm:2.0.11'
+    implementation 'si.trina:moka7-live:0.0.13'
+    implementation 'net.lustenauer:utils:1.2.0'
+
+    implementation project(':dh-ui')
+    implementation project(':dh-api')
+}
+
+
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        jvmTarget = 11
+    }
+}
+
+task deleteOpenapiJson(type: Delete) {
+    doFirst {
+        println 'Delete openapi.json file because otherwise it will not be updated'
+        delete {
+            file "build/openapi.json"
+        }
+    }
+}
+
+repositories {
+    maven {
+        url 'https://repo.maven.apache.org/maven2'
+        name 'Maven Central'
+    }
+}
+
+def props = new Properties()
+file('src/main/resources/application.properties').withInputStream {
+    props.load(it)
+}
+def port = props['server.port']
+
+openApi {
+    apiDocsUrl.set("http://localhost:${port}/v3/api-docs")
+}
+
+
